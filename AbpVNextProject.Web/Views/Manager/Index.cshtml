@@ -1,0 +1,83 @@
+@{
+    ViewData["Title"] = "Index";
+}
+<script src="~/lib/vue/vue.min.js"></script>
+<script src="~/lib/vue/axios.min.js"></script>
+<script src="~/lib/vue/elementui.js"></script>
+<link rel="stylesheet" href="~/lib/vue/elementui.css">
+<div id="managerPage">
+    @* 新建角色 *@
+    <el-popover placement="right" width="400" trigger="click">
+        <h3 style="text-align: center;">新建角色</h3>
+        <p>
+            <el-input v-model="roleName" placeholder="请输入角色名称"></el-input>
+        </p>
+        <p>
+            <el-button type="primary" style="width: 100%;" v-on:click="addRole">添加</el-button>
+        </p>
+        <el-button slot="reference">新建角色</el-button>
+    </el-popover>
+    @* 权限列表 *@
+    <el-table :data="roles" stripe style="width: 100%">
+        <el-table-column prop="id" label="ID" width="180" v-if="showCol">
+        </el-table-column>
+        <el-table-column prop="roleName" label="角色名称" width="180">
+        </el-table-column>
+        <el-table-column label="操作">
+            <template slot-scope="scope">
+                <el-button v-on:click="showAuthorization(scope.row)" type="text" size="small">查看</el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+    <el-button v-if="showButton" v-on:click="showCol = !showCol" type="text" size="small">显示ID</el-button>
+
+</div>
+
+<script>
+    new Vue({
+        el: "#managerPage",
+        data: {
+            roleName: "",
+            roles: [],
+            showCol: false,
+            showButton:false,
+        },
+        mounted() {
+            this.getRoles();
+            this.showButton = true;
+        },
+        methods: {
+            getRoles: function () {
+                axios.get("/manager/getall/").then(res => {
+                    this.roles = res.data;
+                })
+            },
+            addRole: function () {
+                var that = this;
+                if (this.roleName != "") {
+                    axios.get("/manager/add", { params: { roleName: this.roleName } }).then(function (res) {
+                        if (res.data) {
+                            that.$notify({
+                                title: '成功',
+                                message: '角色添加成功',
+                                type: 'success'
+                            });
+                        }
+                    })
+                }
+            },
+            showAuthorization: function (row) {
+                console.log(row);
+            }
+        }
+    })
+
+</script>
+
+<style>
+    #managerPage {
+        width: 800px;
+        margin: auto;
+        margin-top: 100px;
+    }
+</style>
